@@ -15,29 +15,29 @@ namespace TagsToPath
             string title = string.Concat(
                 theTrack.Title.Split(Path.GetInvalidFileNameChars())
             );
-            
+
             if (theTrack.AudioFormat.IsValidExtension(".flac")) ext = "flac";
             if (theTrack.AudioFormat.IsValidExtension(".mp3")) ext =  "mp3";
             if (theTrack.AudioFormat.IsValidExtension(".m4a")) ext =  "m4a";
             if (theTrack.AudioFormat.IsValidExtension(".ogg")) ext = "ogg";
-            
+
             string fName = $"[{dn}.{tnS}] {title}.{ext}";
-            
+
             return fName;
         }
-        
+
         private static string GenerateFolderName(Track theTrack)
         {
             string album = string.Concat(
                 theTrack.Album.Split(Path.GetInvalidFileNameChars())
             );
-            
+
             // ReSharper disable once CanSimplifyDictionaryLookupWithTryGetValue
             if (theTrack.AdditionalFields.ContainsKey("ORIGINALDATE"))
             {
                 return $"[{theTrack.AdditionalFields["ORIGINALDATE"]}] {album}";
             }
-            
+
             if (theTrack.Date!.Value.Year != 1 && theTrack.Date!.Value.Month != 1 && theTrack.Date!.Value.Day != 1)
             {
                 string date = ((DateTime)theTrack.Date).ToString("yyyy-MM-dd");
@@ -47,8 +47,36 @@ namespace TagsToPath
             return $"[{theTrack.Year}] {album}";
         }
 
+        private static void FixDualArtistTags(Track theTrack)
+        {
+            int ftPosition = theTrack.Artist.IndexOf(" feat. ");
+            if (ftPosition == -1) return;
+
+            int trackAdditionPosition = theTrack.Title.IndexOf('(');
+
+            string artist1 = theTrack.Artist.Substring(0,ftPosition);
+            string artist2 = theTrack.Artist.Substring(ftPosition).Trim();
+
+            theTrack.Artist = artist1;
+
+            if (trackAdditionPosition == -1) {
+                theTrack.Title = $"{theTrack.Title} ({artist2})";
+            } else {
+                string title = theTrack.Title.Substring(0, trackAdditionPosition).Trim();
+                string addition = theTrack.Title.Substring(trackAdditionPosition);
+                theTrack.Title = $"{title} ({artist2}) {addition}";
+            }
+
+            theTrack.Save();
+        }
+
         private static void ProcessFile(string path, string folder)
         {
+            if (Directory.Exists(path)) {
+                ProcessFolder(path, folder);
+                return;
+            }
+
             try
             {
                 if (!File.Exists(path)) throw new Exception($"File '{path}' not found");
@@ -59,12 +87,14 @@ namespace TagsToPath
                     theTrack.Year = int.Parse(oyField);
                     theTrack.Save();
                 }
-                    
+
                 if (theTrack.Date!.Value.Year == 1 && theTrack.AdditionalFields.TryGetValue("ORIGINALDATE", out var odField))
                 {
                     theTrack.Date = DateTime.Parse(odField);
                     theTrack.Save();
                 }
+
+                FixDualArtistTags(theTrack);
 
                 #region Check tags
                 if (string.IsNullOrEmpty(theTrack.Artist)) throw new Exception($"Tag 'Artist' is not presented in file {path}");
@@ -87,7 +117,7 @@ namespace TagsToPath
                 Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
                 if (path == newPath) throw new Exception("Old and new paths are same");
                 File.Move(path, newPath, true);
-                    
+
                 Console.WriteLine("Moved");
                 Console.WriteLine(path);
                 Console.WriteLine("to");
@@ -109,7 +139,7 @@ namespace TagsToPath
                 {
                     ProcessFile(file, target);
                 }
-                
+
                 foreach (string directory in Directory.GetDirectories(source))
                 {
                     ProcessFolder(directory, target);
@@ -121,7 +151,7 @@ namespace TagsToPath
                 ProcessFile(source, target);
             }
         }
-        
+
         private static void Main(string[] args)
         {
             if (args.Length == 2)
@@ -131,10 +161,10 @@ namespace TagsToPath
                 ProcessFolder(source, target);
                 return;
             }
-            
-            Console.Write("Enter target folder: ");
+
+            Console.Write("Enter full path target folder: ");
             string folder = Console.ReadLine() ?? throw new InvalidOperationException();
-                
+
             while (true)
             {
                 Console.Write("Drag files: ");

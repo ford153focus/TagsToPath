@@ -18,6 +18,7 @@ internal static class Program
 
             Fixers.FixDiscNumber(theTrack);
             Fixers.FixDualArtistTags(theTrack);
+            Fixers.FixDiscogsArtistTag(theTrack);
             Fixers.FixYear(theTrack);
 
             #region Check tags
@@ -42,6 +43,8 @@ internal static class Program
             Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
             File.Move(path, newPath, true);
 
+            Utils.CoverSave(path, newPath);
+
             Console.WriteLine("Moved");
             Console.WriteLine(path);
             Console.WriteLine("to");
@@ -55,7 +58,7 @@ internal static class Program
             Console.WriteLine(e.Message);
         }
     }
-    
+
     private static void ProcessFolder(string source, string target)
     {
         if (Directory.Exists(source))

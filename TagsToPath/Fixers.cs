@@ -1,4 +1,5 @@
 using ATL;
+using System.Text.RegularExpressions;
 
 namespace TagsToPath;
 
@@ -19,19 +20,19 @@ public static class Fixers
             theTrack.Save();
         }
     }
-    
+
     /** if disc info not presented fill with stub */
     public static void FixDiscNumber(Track theTrack)
     {
         if (theTrack.DiscNumber != 0) return;
         if (theTrack.DiscTotal != 0) return;
-        
+
         theTrack.DiscNumber = 1;
         theTrack.DiscTotal = 1;
-        
+
         theTrack.Save();
     }
-    
+
     /** Move second 'feat.'-artist to title */
     public static void FixDualArtistTags(Track theTrack)
     {
@@ -54,5 +55,17 @@ public static class Fixers
         }
 
         theTrack.Save();
+    }
+
+    /** Discogs putting number in squares at the end of artist title */
+    public static void FixDiscogsArtistTag(Track theTrack)
+    {
+        string pattern =  @"\(\d+\)$";
+
+        if (Regex.IsMatch(theTrack.Artist, pattern))
+        {
+            theTrack.Artist = Regex.Replace(theTrack.Artist, pattern, "");
+            theTrack.Save();
+        }
     }
 }

@@ -6,20 +6,24 @@ internal static class Program
 {
     private static void ProcessFile(string path, string folder)
     {
+        #region If path is folder - pass to correct method
         if (Directory.Exists(path)) {
             ProcessFolder(path, folder);
             return;
         }
+        #endregion
 
         try
         {
             if (!File.Exists(path)) throw new Exception($"File '{path}' not found");
             Track theTrack = new Track(path);
 
+            #region Fix some autofixable tags
             Fixers.FixDiscNumber(theTrack);
             Fixers.FixDualArtistTags(theTrack);
             Fixers.FixDiscogsArtistTag(theTrack);
             Fixers.FixYear(theTrack);
+            #endregion
 
             #region Check tags
             if (string.IsNullOrEmpty(theTrack.Artist)) throw new Exception($"Tag 'Artist' is not presented in file {path}");
@@ -30,6 +34,7 @@ internal static class Program
             if (string.IsNullOrEmpty(theTrack.Title)) throw new Exception($"Tag 'Title' is not presented in file {path}");
             #endregion
 
+            #region Check current path and potential new path
             string newPath = Path.Combine(new [] {
                 folder,
                 string.Concat(
@@ -40,10 +45,13 @@ internal static class Program
             });
 
             if (path == newPath) throw new Exception("Old and new paths are same");
+            #endregion
+
+            #region Saving
             Directory.CreateDirectory(Path.GetDirectoryName(newPath)!);
             File.Move(path, newPath, true);
-
             Utils.CoverSave(path, newPath);
+            #endregion
 
             Console.WriteLine("Moved");
             Console.WriteLine(path);
@@ -82,6 +90,8 @@ internal static class Program
 
     private static void Main(string[] args)
     {
+
+        #region Parse cli arguments
         if (args.Length == 2)
         {
             string source = args[0];
@@ -89,14 +99,23 @@ internal static class Program
             ProcessFolder(source, target);
             return;
         }
+        #endregion
 
+        #region Debugging one preselected file
+        const string? DEBUG_FILE = null;
+        const string? DEBUG_FOLDER = null;
+        #endregion
+
+        #region Determine target folder
         Console.Write("Enter full path target folder: ");
-        string folder = Console.ReadLine() ?? throw new InvalidOperationException();
+        string folder = DEBUG_FOLDER ?? Console.ReadLine() ?? throw new InvalidOperationException();
+        #endregion
 
+        #region Infinite cycle for file proccessing
         while (true)
         {
             Console.Write("Drag files: ");
-            string inputStr = Console.ReadLine() ?? throw new InvalidOperationException();
+            string inputStr = DEBUG_FILE ?? Console.ReadLine() ?? throw new InvalidOperationException();
             var inputPaths = inputStr.Trim('"').Split("\"\"");
 
             foreach (string path in inputPaths)
@@ -104,5 +123,6 @@ internal static class Program
                 ProcessFile(path, folder);
             }
         }
+        #endregion
     }
 }

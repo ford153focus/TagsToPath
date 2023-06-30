@@ -1,6 +1,3 @@
-using ATL;
-using System.Text.RegularExpressions;
-
 namespace TagsToPath;
 
 public static class Utils
@@ -9,17 +6,18 @@ public static class Utils
     public static void CoverSave(string oldPath, string newPath)
     {
         List<string> fileNames = new List<string> {
-            "folder",
-            "Folder",
-            "cover",
-            "Cover",
+            "albumart", "Albumart",
+            "Cover", "cover",
+            "Folder", "folder",
+            "Front", "front",
         };
 
         List<string> fileExtensions = new List<string> {
-            "jpg",
-            "jpeg",
-            "png",
             "gif",
+            "jpg", "jpeg",
+            "png",
+            "tiff",
+            "webp",
         };
 
         string newFolder = Path.GetDirectoryName(newPath)!;

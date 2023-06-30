@@ -8,16 +8,34 @@ public static class Fixers
     /** Use full release date with month and day */
     public static void FixYear(Track theTrack)
     {
-        if (theTrack.Year == 0 && theTrack.AdditionalFields.TryGetValue("ORIGINALYEAR", out var oyField))
+        if (theTrack.Year == 0)
         {
-            theTrack.Year = int.Parse(oyField);
-            theTrack.Save();
+            if (theTrack.AdditionalFields.TryGetValue("originalyear", out var oyField1))
+            {
+                theTrack.Year = int.Parse(oyField1);
+                theTrack.Save();
+            }
+            
+            if (theTrack.AdditionalFields.TryGetValue("ORIGINALYEAR", out var oyField2))
+            {
+                theTrack.Year = int.Parse(oyField2);
+                theTrack.Save();
+            }
         }
 
-        if (theTrack.Date!.Value.Year == 1 && theTrack.AdditionalFields.TryGetValue("ORIGINALDATE", out var odField))
+        if (theTrack.Date!.Value.Year == 1)
         {
-            theTrack.Date = DateTime.Parse(odField);
-            theTrack.Save();
+            if (theTrack.AdditionalFields.TryGetValue("originaldate", out var odField1))
+            {
+                theTrack.Date = DateTime.Parse(odField1);
+                theTrack.Save();
+            }
+            
+            if (theTrack.AdditionalFields.TryGetValue("ORIGINALDATE", out var odField2))
+            {
+                theTrack.Date = DateTime.Parse(odField2);
+                theTrack.Save();
+            }
         }
     }
 

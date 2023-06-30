@@ -1,3 +1,4 @@
+// ReSharper disable CanSimplifyDictionaryLookupWithTryGetValue
 using ATL;
 
 namespace TagsToPath;
@@ -31,18 +32,12 @@ public static class Generators
             theTrack.Album.Split(Path.GetInvalidFileNameChars())
         );
 
-        // ReSharper disable once CanSimplifyDictionaryLookupWithTryGetValue
-        if (theTrack.AdditionalFields.ContainsKey("ORIGINALDATE"))
-        {
-            return $"[{theTrack.AdditionalFields["ORIGINALDATE"]}] {album}";
-        }
-
-        if (theTrack.Date!.Value.Year != 1 && theTrack.Date!.Value.Month != 1 && theTrack.Date!.Value.Day != 1)
+        if (theTrack.Date!.Value.Year != 1)
         {
             string date = ((DateTime)theTrack.Date).ToString("yyyy-MM-dd");
             return $"[{date}] {album}";
         }
-
+        
         return $"[{theTrack.Year}] {album}";
     }
 }

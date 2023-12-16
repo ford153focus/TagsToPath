@@ -90,7 +90,6 @@ internal static class Program
 
     private static void Main(string[] args)
     {
-
         #region Parse cli arguments
         if (args.Length == 2)
         {
@@ -102,20 +101,20 @@ internal static class Program
         #endregion
 
         #region Debugging one preselected file
-        const string? DEBUG_FILE = null;
-        const string? DEBUG_FOLDER = null;
+        const string? DEBUG_SRC = null;
+        const string? DEBUG_DST = null;
         #endregion
 
         #region Determine target folder
         Console.Write("Enter full path target folder: ");
-        string folder = DEBUG_FOLDER ?? Console.ReadLine() ?? throw new InvalidOperationException();
+        string folder = DEBUG_DST ?? Console.ReadLine() ?? throw new InvalidOperationException();
         #endregion
 
         #region Infinite cycle for file proccessing
         while (true)
         {
             Console.Write("Drag files: ");
-            string inputStr = DEBUG_FILE ?? Console.ReadLine() ?? throw new InvalidOperationException();
+            string inputStr = DEBUG_SRC ?? Console.ReadLine() ?? throw new InvalidOperationException();
             var inputPaths = inputStr.Trim('"').Split("\"\"");
 
             foreach (string path in inputPaths)
